@@ -1,67 +1,72 @@
 # importer les librairies
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('TkAgg')
 from sklearn.cluster import KMeans
-from matplotlib import pyplot as plt
-from sklearn.preprocessing import MinMaxScaler
+from sklearn import datasets
 
-# Chargement des données :
-df = pd.read_csv("incomeDataSet.csv", sep=";")
-print(df.head())
+# chargement de base de données iris
+iris = datasets.load_iris()
 
+# affichage des données du dataset
+print(iris.target)
+print(iris.target_names)
+print(iris.feature_names)
+print(iris.data)
+# stocker les données en tant que DataFrame Pandas
+x = pd.DataFrame(iris.data, columns=['Sepal_Length', 'Sepal_width', 'Petal_Length', 'Petal_width'])
 
-# affichage des données du dataset : on cherche à prédire le salaire en fonction de l'âge
-plt.scatter(df['Age'], df['Revenu'])
-# plt.show()
+# définir les noms de colonnes
+# print(x.columns['sepal length (cm)', 'sepal width (cm)', 'petal length (cm)', 'petal width (cm)'])
+# y=pd.DataFrame(iris.target)
+# print(y.columns['classe'])
 
-km = KMeans(n_clusters=3)
-print(km)
+# Répartition du DataSet dans un scatter plot 2D
+plt.scatter(x.Petal_Length, x.Petal_width)
+plt.show()
+# Visualiser les classes de notre dataset
+colorL = np.array(['green', 'red', 'blue'])
+plt.scatter(x.Petal_Length, x.Petal_width, c=colorL[iris.target], s=20)
+plt.show()
+# Utiliser la méthode Elbow pour trouver le nombre optimal de clusters
 
-Y_pred = km.fit_predict(df[['Age', 'Revenu']])
-print(Y_pred)
+x1 = x.iloc[:, [0, 1, 2, 3]]
+SSE = []
+Krange = np.arange(1, 11)
+for k in Krange:
+    KM = KMeans(n_clusters=k)
+    KM.fit(x)
+    SSE.append(KM.inertia_)
+# squarred errors
+print(SSE)
 
-df['cluster'] = Y_pred
-df.head()
+# Afficher la courbe de la méthode elbow
 
-df1 = df[df.cluster == 0]
-df2 = df[df.cluster == 1]
-df3 = df[df.cluster == 2]
-
-plt.scatter(df1.Age, df1['Revenu'], color='green')
-plt.scatter(df2.Age, df2['Revenu'], color='red')
-plt.scatter(df3.Age, df3['Revenu'], color='black')
-plt.xlabel('Age')
-plt.ylabel('Revenu')
-plt.legend()
+plt.plot(Krange, SSE)
+plt.title('La méthode Elbow')
+plt.xlabel('Nombre de clusters')
+plt.ylabel('inertia')
 plt.show()
 
-# scaler = MinMaxScaler()
-# scaler.fit(df[['Revenu']])
-# df['Revenu'] = scaler.transform(df['Revenu'])
-#
-# scaler.fit(df.Age)
-# df.Age = scaler.transform(df.Age)
-# print(df)
+# Clusters K-Means
+model = KMeans(n_clusters=3)
+print(model.fit(x))
 
-km= KMeans(n_clusters =3)
-Y_pred = km.fit_predict(df[['Age', 'Revenu']])
-print(Y_pred)
+print(model.labels_)
 
-df['cluster'] = Y_pred
-df.drop('cluster',axis='columns',inplace=True)
-print(df)
+# Visualiser les classes prédites par le modèle
+colorL = np.array(['green', 'red', 'blue'])
+plt.scatter(x.Petal_Length, x.Petal_width, c=colorL[model.labels_], s=20)
 
+# Visualiser les classes originales et prédites par le modèle
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 3))
+fig.suptitle('classe originales et classes trouvées par le modèle')
+ax1.scatter(x.Petal_Length, x.Petal_width, c=colorL[model.labels_], s=20)
+ax2.scatter(x.Petal_Length, x.Petal_width, c=colorL[iris.target], s=20)
 
-df1 = df[df.cluster == 0]
-df2 = df[df.cluster == 1]
-df3 = df[df.cluster == 2]
+# Matrice de confusion
+from sklearn.metrics import confusion_matrix
 
-plt.scatter(df1.Age, df1['Revenu'], color='green')
-plt.scatter(df2.Age, df2['Revenu'], color='red')
-plt.scatter(df3.Age, df3['Revenu'], color='black')
-plt.scatter()
-plt.xlabel('Age')
-plt.ylabel('Revenu')
-plt.legend()
-plt.show()
-
-print(km.clustercenters)
+print(confusion_matrix((iris.target), model.labels_))

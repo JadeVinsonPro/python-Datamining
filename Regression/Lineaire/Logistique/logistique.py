@@ -1,6 +1,10 @@
 # importation des librairies
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib
+from mlxtend.evaluate import accuracy_score
+
+matplotlib.use('TkAgg')
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 
@@ -12,6 +16,8 @@ print(dataset.head())
 
 # afficher le dataset (Age-Outcome)
 plt.scatter(dataset.Age, dataset.Outcome)
+# sauvegarde du graphique dans le dossier
+plt.savefig('graphiqueLogistique.png')
 # afficher nuage de points
 plt.show()
 
@@ -36,3 +42,7 @@ print(classifier.score(X_test, Y_test))
 # diabètique
 #Retourne 1 si oui, sinon 0
 print(classifier.predict([[3,110,65,35,0,34,0.125,76]]))
+
+#calculer l'accuracy du modele en comparant les variables y de test et d'entrainement
+print("Accuracy : ")
+print(accuracy_score(Y_test,Y_pred))
